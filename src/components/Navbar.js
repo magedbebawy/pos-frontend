@@ -1,9 +1,11 @@
 // src/components/Navbar.js
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 
 const Navbar = () => {
+    const navigate = useNavigate();
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container-fluid">
@@ -22,7 +24,20 @@ const Navbar = () => {
                         <li className="nav-item">
                             <Link className="nav-link" to="/sales/new">New sale</Link>
                         </li>
-                        {/* Add more nav items as needed */}
+                        <li className="nav-item dropdown">
+                            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                                Actions
+                            </a>
+                            <div className="dropdown-menu">
+                                <button className="dropdown-item">Close Shift</button>
+                                <button className="dropdown-item">Close Day</button>
+                                <button className="dropdown-item">Logout Cashier</button>
+                                <button className="dropdown-item" onClick={() => {
+                                    navigate('/admin/signin');
+                                    console.log("Logged Out");
+                                }}>Sign In</button>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
