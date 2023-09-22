@@ -8,11 +8,31 @@ const ProductList = () => {
     const [productsPerPage] = useState(20);
     const [searchQuery, setSearchQuery] = useState('');
     const [maxUnits, setMaxUnits] = useState(1000);
-    const [showActive, setShowActive] = useState('all'); // 'all', 'active', 'inactive'
+    const [showActive, setShowActive] = useState('all');
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState({});
+
+    const openEditModal = (product) => {
+        setSelectedProduct(product);
+        setShowEditModal(true);
+    };
+
+    const closeEditModal = () => {
+        setShowEditModal(false);
+        setSelectedProduct({});
+    };
 
 
     useEffect(() => {
         setProducts(prod);
+        const handleEsc = (event) => {
+            if (event.keyCode === 27) closeEditModal();  // 27 is the keycode for the ESC key
+        };
+        window.addEventListener('keydown', handleEsc);
+    
+        return () => {
+            window.removeEventListener('keydown', handleEsc);
+        };
     }, []);
 
     // Pagination logic
@@ -40,40 +60,41 @@ const ProductList = () => {
                 <Link to="/products/new" className="btn btn-primary">Add New Product</Link>
             </div>
             
-            {/* Search Functionality */}
-            <div className="mt-3 mb-3">
-                <input 
-                    type="text" 
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="form-control"
-                />
-            </div>
+            <div className='row'>
+                <div className="mt-4 mb-3 col-md-3">
+                    <input 
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="form-control"
+                    />
+                </div>
 
-            {/* Filtering by number of units */}
-            <div className="mb-3">
-                <label>Max Units Available:</label>
-                <input 
-                    type="number" 
-                    value={maxUnits}
-                    onChange={e => setMaxUnits(e.target.value)}
-                    className="form-control"
-                />
-            </div>
+                {/* Filtering by number of units */}
+                <div className="mb-3 col-md-3">
+                    <label>Max Units Available:</label>
+                    <input 
+                        type="number" 
+                        value={maxUnits}
+                        onChange={e => setMaxUnits(e.target.value)}
+                        className="form-control"
+                    />
+                </div>
 
-            {/* Filtering by active status */}
-            <div className="mb-3">
-                <label>Show:</label>
-                <select 
-                    value={showActive}
-                    onChange={e => setShowActive(e.target.value)}
-                    className="form-control"
-                >
-                    <option value="all">All Products</option>
-                    <option value="active">Active Products</option>
-                    <option value="inactive">Inactive Products</option>
-                </select>
+                {/* Filtering by active status */}
+                <div className="mb-3 col-md-3">
+                    <label>Show:</label>
+                    <select 
+                        value={showActive}
+                        onChange={e => setShowActive(e.target.value)}
+                        className="form-control"
+                    >
+                        <option value="all">All Products</option>
+                        <option value="active">Active Products</option>
+                        <option value="inactive">Inactive Products</option>
+                    </select>
+                </div>
             </div>
 
             <table className="table mt-4">
@@ -84,6 +105,7 @@ const ProductList = () => {
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Taxable</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -94,11 +116,70 @@ const ProductList = () => {
                             <td>${product.price.toFixed(2)}</td>
                             <td>{product.quantity}</td>
                             <td>{product.taxable ? 'Yes' : 'No'}</td>
-                            <td><button className='btn btn-secondary btn-sm'>Edit</button></td>
+                            <td><button className='btn btn-secondary btn-sm' onClick={() => openEditModal(product)}>Edit</button></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+            {showEditModal && (
+                <>
+                    <div className="modal-backdrop show" onClick={closeEditModal}></div>
+                    <div className="modal show d-block" tabIndex="-1">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Edit Product: {selectedProduct.name}</h5>
+                                    <button type="button" className="close" onClick={closeEditModal}>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body">
+                                    <label className='m-1'>Product Name:</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control m-1"
+                                        value={selectedProduct.name} 
+                                        onChange={(e) => setSelectedProduct({...selectedProduct, name: e.target.value})}
+                                    />
+                                    <label className='m-1'>Product Price:</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control m-1"
+                                        value={selectedProduct.price} 
+                                        onChange={(e) => setSelectedProduct({...selectedProduct, price: e.target.value})}
+                                    />
+                                    <label className='m-1'>Quantity:</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control m-1"
+                                        value={selectedProduct.quantity} 
+                                        onChange={(e) => setSelectedProduct({...selectedProduct, quantity: e.target.value})}
+                                    />
+                                    <label className='m-1'>Taxable: </label>
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input m-2"
+                                        id="taxable"
+                                        checked={selectedProduct.taxable}
+                                        onChange={e => setSelectedProduct({...selectedProduct, taxable: e.target.checked})}
+                                        />
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={closeEditModal}>Cancel</button>
+                                    <button type="button" className="btn btn-primary" onClick={() => {
+                                        closeEditModal();
+                                    }}>
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+                )}
+
+
+
             
             {/* Pagination Controls */}
             <nav>

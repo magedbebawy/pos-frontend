@@ -21,9 +21,6 @@ const Navbar = () => {
                         <li className="nav-item">
                             <Link className="nav-link" to="/sales">Sales</Link>
                         </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/sales/new">New sale</Link>
-                        </li>
                         <li className="nav-item dropdown">
                             <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
                                 Actions
