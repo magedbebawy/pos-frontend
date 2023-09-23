@@ -89,71 +89,91 @@ const POS = () => {
     };
 
     return (
-        <div className="container mt-4">
-            <h2>POS System</h2>
-            
-            <input 
-                type="text" 
-                placeholder="Scan item" 
-                value={barcode}
-                onChange={e => setBarcode(e.target.value)}
-                onKeyPress={event => {
-                    if (event.key === 'Enter') {
-                        handleScan();
-                    }
-                }}
-            />
+        <div className="container mt-4 row">
+            <div className='col-md-8'>
+                <h2>POS System</h2>
+                
+                <input 
+                    type="text" 
+                    placeholder="Scan item" 
+                    value={barcode}
+                    onChange={e => setBarcode(e.target.value)}
+                    onKeyPress={event => {
+                        if (event.key === 'Enter') {
+                            handleScan();
+                        }
+                    }}
+                />
 
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Quantity</th>
-                        <th>Unit price</th>
-                        <th>Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items.map(item => (
-                        <tr key={item.barcode}>
-                            <td>{item.name}</td>
-                            <td>{item.qty}</td>
-                            <td>${item.price.toFixed(2)}</td>
-                            <td>${item.totalPrice.toFixed(2)}</td>
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Unit price</th>
+                            <th>Price</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {items.map(item => (
+                            <tr key={item.barcode}>
+                                <td>{item.name}</td>
+                                <td>{item.qty}</td>
+                                <td>${item.price.toFixed(2)}</td>
+                                <td>${item.totalPrice.toFixed(2)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
 
-            <h3>Total: ${total.toFixed(2)}</h3>
+                <h3>Total: ${total.toFixed(2)}</h3>
 
-            <div>
-                <label className='p-3'>
-                    <input type="radio" value="Cash" checked={paymentMode === 'Cash'} onChange={() => setPaymentMode('Cash')} />
-                    Cash
-                </label>
-                <label>
-                    <input type="radio" value="Credit Card" checked={paymentMode === 'Credit Card'} onChange={() => setPaymentMode('Credit Card')} />
-                    Credit Card
-                </label>
+                <div>
+                    <label className='p-3'>
+                        <input type="radio" value="Cash" checked={paymentMode === 'Cash'} onChange={() => setPaymentMode('Cash')} />
+                        Cash
+                    </label>
+                    <label>
+                        <input type="radio" value="Credit Card" checked={paymentMode === 'Credit Card'} onChange={() => setPaymentMode('Credit Card')} />
+                        Credit Card
+                    </label>
+                </div>
+
+                {paymentMode === 'Cash' && (
+                    <div className="mb-3">
+                        <label className="form-label">Cash Received:</label>
+                        <input type="number" className="form-control" value={cashReceived} onChange={e => setCashReceived(parseFloat(e.target.value))} />
+                    </div>
+                )}
+
+                <button className='btn btn-primary' onClick={handlePayment}>Complete Purchase</button>
+
+                {paymentMode === 'Cash' && change > 0 && (
+                    <div className="mt-3">
+                        <h4>Change to give back: ${change.toFixed(2)}</h4>
+                    </div>
+                )}
+                <button className="m-3 btn btn-success" onClick={handlePrintReceipt}>Print Receipt</button>
+                <button className="m-3 btn btn-success" onClick={handlePrintReceipt}>Print Receipt 2</button>
             </div>
-
-            {paymentMode === 'Cash' && (
-                <div className="mb-3">
-                    <label className="form-label">Cash Received:</label>
-                    <input type="number" className="form-control" value={cashReceived} onChange={e => setCashReceived(parseFloat(e.target.value))} />
+            <div className='col-md-4 mt-5'>
+                <div className='row mt-5'>
+                    <div className='row'>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Discount</button>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Tax</button>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Refund</button>
+                    </div>
+                    <div className='row'>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Non-UPC items</button>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Open drawer</button>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Clear transaction</button>
+                    </div>
+                    <div className='row'>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Price check</button>
+                        <button className='col btn btn-md btn-dark m-2 p-2'>Save transaction</button>
+                    </div>
                 </div>
-            )}
-
-            <button className='btn btn-primary' onClick={handlePayment}>Complete Purchase</button>
-
-            {paymentMode === 'Cash' && change > 0 && (
-                <div className="mt-3">
-                    <h4>Change to give back: ${change.toFixed(2)}</h4>
-                </div>
-            )}
-            <button className="m-3 btn btn-success" onClick={handlePrintReceipt}>Print Receipt</button>
-            <button className="m-3 btn btn-success" onClick={handlePrintReceipt}>Print Receipt 2</button>
+            </div>
         </div>
     );
 }
