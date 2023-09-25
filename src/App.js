@@ -3,7 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import NewProduct from './components/NewProduct';
-import POS from './components/Pos';
+import POS from './components/POS/Pos';
 import ProductList from './components/ProductList';
 import SalesList from './components/SalesList';
 import SignIn from './components/SignIn';

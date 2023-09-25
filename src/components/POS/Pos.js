@@ -1,17 +1,43 @@
 // src/components/POS.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import prod from '../products';
+import { useDispatch, useSelector } from 'react-redux';
+import { Button, Modal } from 'react-bootstrap'
+import './pos.css';
+import { clearTrans, addItem, removeItem} from '../../redux/actions/transactionActions';
+import prod from '../../products';
 
 const POS = () => {
-    const [products, setProducts] = useState([]);
-    const [items, setItems] = useState([]);
-    const [total, setTotal] = useState(0);
+    const inputRef = useRef(null);
+    const dsipatch = useDispatch();
+    const items = useSelector(state => state.transaction.items);
+    const total = useSelector(state => state.transaction.total);
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+    const [ currItem, setCurrItem ] = useState('');
+    console.log('items', items);
     const [paymentMode, setPaymentMode] = useState('');
     const [barcode, setBarcode] = useState('');
     const [cashReceived, setCashReceived] = useState(0);
     const [change, setChange] = useState(0);
+    
+    useEffect(() => {
+        inputRef.current.focus();
+
+        const handleBlur = () => {
+            if(!show) {
+                inputRef.current.focus();
+            }
+        };
+    
+        inputRef.current.addEventListener('blur', handleBlur);
+    
+        return () => {
+            inputRef.current.removeEventListener('blur', handleBlur);
+        };
+      }, [show]);
 
     const handlePrintReceipt = () => {
         const receiptData = {
@@ -47,32 +73,14 @@ const POS = () => {
         //         console.error("Error fetching product: ", error);
         //     });
         let product = prod.filter(product => product.barcode == barcode);
-        if(product.length > 0){
-            console.log(product);
-            if(product[0].qty) {
-                product[0].qty ++;
-                product[0].totalPrice += product[0].price;
-                for(let i=0; i<items.length; i++) {
-                    if(items[i].barcode === product[0].barcode) {
-                        const newProds = items;
-                        newProds[i] = product[0];
-                        setItems(newProds);
-                        const currTotal = items.reduce((acc, currentValue) => acc + currentValue.totalPrice, 0)
-                        setTotal(currTotal);
-                        setBarcode(''); // Clear the barcode input
-                        return;
-                    }
-                }
-            } else {
-                product[0].qty = 1;
-                product[0].totalPrice = product[0].price;
-                setItems(prevItems => [...prevItems, product[0]]);
-                setTotal(prevTotal => prevTotal + product[0].price);
-                setBarcode(''); // Clear the barcode input
-            }
-            console.log(items);
+        console.log('product', product[0]);
+        if (product.length > 0) {
+            dsipatch(addItem(product[0]));
+            setBarcode('');
+            return;
         }else {
             alert('Product not found');
+            setBarcode('');
         }
     };
 
@@ -94,6 +102,7 @@ const POS = () => {
                 <h2>POS System</h2>
                 
                 <input 
+                    ref={inputRef}
                     type="text" 
                     placeholder="Scan item" 
                     value={barcode}
@@ -116,9 +125,12 @@ const POS = () => {
                     </thead>
                     <tbody>
                         {items.map(item => (
-                            <tr key={item.barcode}>
+                            <tr key={item.barcode} onClick={() => {
+                                setCurrItem(item);
+                                handleShow();
+                            }}>
                                 <td>{item.name}</td>
-                                <td>{item.qty}</td>
+                                <td>{item.transQty}</td>
                                 <td>${item.price.toFixed(2)}</td>
                                 <td>${item.totalPrice.toFixed(2)}</td>
                             </tr>
@@ -166,7 +178,10 @@ const POS = () => {
                     <div className='row'>
                         <button className='col btn btn-md btn-dark m-2 p-2'>Non-UPC items</button>
                         <button className='col btn btn-md btn-dark m-2 p-2'>Open drawer</button>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Clear transaction</button>
+                        <button 
+                            className='col btn btn-md btn-dark m-2 p-2' 
+                            onClick={() => dsipatch(clearTrans())}
+                            >Clear transaction</button>
                     </div>
                     <div className='row'>
                         <button className='col btn btn-md btn-dark m-2 p-2'>Price check</button>
@@ -174,6 +189,24 @@ const POS = () => {
                     </div>
                 </div>
             </div>
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Delete/modify item</Modal.Title>
+                </Modal.Header>
+                <label className='m-2'>Quantity:</label>
+                <input className='form-control customInput' placeholder={currItem.transQty} />
+                <Modal.Footer>
+                <button className='btn btn-primary' onClick={handleClose}>
+                    Close
+                </button>
+                <button className='btn btn-success' onClick={handleClose}>
+                    Update
+                </button>
+                <button className='btn btn-danger' onClick={handleClose}>
+                    Delete Item
+                </button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
