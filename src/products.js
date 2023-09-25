@@ -2,7 +2,7 @@ const products = [
         { barcode: '0012345678901', name: 'Apple Juice', price: 2.50, quantity: 100, taxable: true },
         { barcode: '0012345678902', name: 'Banana Bunch', price: 1.20, quantity: 75, taxable: true },
         { barcode: '0012345678903', name: 'Chocolate Bar', price: 1.50, quantity: 200, taxable: false },
-        { barcode: '0012345678904', name: 'Bread Loaf', price: 2.00, quantity: 50, taxable: true },
+        { barcode: '64634285156', name: 'Bread Loaf', price: 2.00, quantity: 50, taxable: true },
         { barcode: '0012345678905', name: 'Butter', price: 3.00, quantity: 80, taxable: true },
         { barcode: '0012345678996', name: 'Wireless Mouse', price: 15.00, quantity: 25, taxable: true },
         { barcode: '0012345678997', name: 'Keyboard', price: 20.00, quantity: 20, taxable: true },
