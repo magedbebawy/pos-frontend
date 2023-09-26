@@ -1,6 +1,7 @@
 const CLEAR_TRANS = 'CLEAR TRANS';
 const ADD_ITEM = 'ADD_ITEM';
 const REMOVE_ITEM = 'REMOVE_ITEM';
+const UPDATE_ITEM = 'UPDATE_ITEM';
 
 function clearTrans() {
     return {
@@ -15,18 +16,30 @@ function addItem(item) {
     }
 };
 
-function removeItem(itemNum) {
+function removeItem(barcode) {
     return {
         type: REMOVE_ITEM,
-        payload: itemNum
+        payload: barcode
     }
 };
+
+function updateItem(barcode, qty) {
+    return {
+        type: UPDATE_ITEM,
+        payload: {
+            barcode, 
+            qty
+        }
+    }
+}
 
 module.exports = {
     CLEAR_TRANS,
     ADD_ITEM,
     REMOVE_ITEM,
+    UPDATE_ITEM,
     clearTrans,
     addItem,
-    removeItem
+    removeItem,
+    updateItem
 };
