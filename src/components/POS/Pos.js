@@ -3,19 +3,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
-import { Modal } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap';
 import './pos.css';
-import { clearTrans, addItem, removeItem, updateItem } from '../../redux/actions/transactionActions';
+import { clearTrans, addItem, removeItem, updateItem, addDiscount, clearDiscount } from '../../redux/actions/transactionActions';
 import prod from '../../products';
 
 const POS = () => {
     const inputRef = useRef(null);
-    const dsipatch = useDispatch();
+    const dispatch = useDispatch();
     const items = useSelector(state => state.transaction.items);
     const total = useSelector(state => state.transaction.total);
-    const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const discount = useSelector(state => state.transaction.discount);
+    const taxes = useSelector(state => state.transaction.taxes);
+    const [showEdit, setShowEdit] = useState(false);
+    const [showDiscount, setShowDiscount] = useState(false);
+    const [ discountType, setDiscountType ] = useState('percent');
+    const [ currDiscount, setCurrDiscount ] = useState(0);
+    // const handleClose = () => setShow(false);
+    // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
     const [ newQty, setNewQty ] = useState(0);
 
@@ -30,7 +35,7 @@ const POS = () => {
         inputRef.current.focus();
     
         const handleBlur = () => {
-            if (!show && inputRef.current) {
+            if (inputRef.current && !showEdit && !showDiscount) {
                 inputRef.current.focus();
             }
         };
@@ -42,7 +47,7 @@ const POS = () => {
                 inputRef.current.removeEventListener('blur', handleBlur);
             }
         };
-    }, [show]);
+    }, [showEdit, showDiscount]);
     
 
     const handlePrintReceipt = () => {
@@ -68,6 +73,19 @@ const POS = () => {
             });
     }
 
+    const handleDiscount = () => {
+        if(currDiscount < 0 || total <= 0) return;
+        console.log('dis', currDiscount)
+        if(discountType === 'dollar') {
+            console.log('1', discountType);
+            dispatch(addDiscount(currDiscount));
+        } else {
+            console.log('12', discountType);
+            const amount = total * (currDiscount/100);
+            dispatch(addDiscount(amount));
+        }
+    }
+
     const handleScan = () => {
         // axios.get(`http://localhost:5000/products/${barcode}`)
         //     .then(response => {
@@ -82,7 +100,7 @@ const POS = () => {
         let product = prod.filter(product => product.barcode == barcode);
         console.log('product', product)
         if (product.length > 0) {
-            dsipatch(addItem(product[0]));
+            dispatch(addItem(product[0]));
             setBarcode('');
             return;
         }else {
@@ -104,10 +122,11 @@ const POS = () => {
 
     return (
         <div className="container mt-4 row">
-            <div className='col-md-8'>
+            <div className='col-lg-8'>
                 <h2>POS System</h2>
                 
                 <input 
+                    className='scanInput'
                     ref={inputRef}
                     type="text" 
                     placeholder="Scan item" 
@@ -121,7 +140,7 @@ const POS = () => {
                     }}
                 />
 
-                <table className="table">
+                <table className="table tableBody">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -134,8 +153,8 @@ const POS = () => {
                         {items.map(item => (
                             <tr key={item.barcode} onClick={() => {
                                 setCurrItem(item);
-                                handleShow();
-                            }}>
+                                setShowEdit(true);
+                                }}>
                                 <td>{item.name}</td>
                                 <td>{item.transQty}</td>
                                 <td>${item.price.toFixed(2)}</td>
@@ -144,10 +163,15 @@ const POS = () => {
                         ))}
                     </tbody>
                 </table>
-
+                {
+                    discount > 0 ? <h6>Discount: ${discount.toFixed(2)}</h6> : ''
+                }
+                {
+                    taxes > 0 ? <h6>Taxes: ${taxes.toFixed(2)}</h6> : ''
+                }
                 <h3>Total: ${total.toFixed(2)}</h3>
 
-                <div>
+                {/* <div>
                     <label className='p-3'>
                         <input type="radio" value="Cash" checked={paymentMode === 'Cash'} onChange={() => setPaymentMode('Cash')} />
                         Cash
@@ -156,7 +180,7 @@ const POS = () => {
                         <input type="radio" value="Credit Card" checked={paymentMode === 'Credit Card'} onChange={() => setPaymentMode('Credit Card')} />
                         Credit Card
                     </label>
-                </div>
+                </div> */}
 
                 {paymentMode === 'Cash' && (
                     <div className="mb-3">
@@ -164,62 +188,105 @@ const POS = () => {
                         <input type="number" className="form-control" value={cashReceived} onChange={e => setCashReceived(parseFloat(e.target.value))} />
                     </div>
                 )}
+                <div className='row'>
+                    <button className='customBtn' onClick={handlePayment}>Cash</button>
+                    <button className='customBtn' onClick={handlePayment}>Card</button>
 
-                <button className='btn btn-primary' onClick={handlePayment}>Complete Purchase</button>
-
-                {paymentMode === 'Cash' && change > 0 && (
-                    <div className="mt-3">
-                        <h4>Change to give back: ${change.toFixed(2)}</h4>
-                    </div>
-                )}
-                <button className="m-3 btn btn-success" onClick={handlePrintReceipt}>Print Receipt</button>
-                <button className="m-3 btn btn-success" onClick={handlePrintReceipt}>Print Receipt 2</button>
+                    {paymentMode === 'Cash' && change > 0 && (
+                        <div className="mt-3">
+                            <h4>Change to give back: ${change.toFixed(2)}</h4>
+                        </div>
+                    )}
+                    <button className="printBtn" onClick={handlePrintReceipt}>Print Receipt</button>
+                    <button className="printBtn" onClick={handlePrintReceipt}>Print Receipt 2</button>
+                </div>
             </div>
-            <div className='col-md-4 mt-5'>
+            <div className='col-lg-4 mt-5'>
                 <div className='row mt-5'>
                     <div className='row'>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Discount</button>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Tax</button>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Refund</button>
+                        <button className='col customBtn' onClick={() => setShowDiscount(true)}>Discount</button>
+                        <button className='col customBtn'>Tax</button>
+                        <button className='col customBtn'>Refund</button>
                     </div>
                     <div className='row'>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Non-UPC items</button>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Open drawer</button>
+                        <button className='col customBtn'>Non-UPC items</button>
+                        <button className='col customBtn'>Open drawer</button>
                         <button 
-                            className='col btn btn-md btn-dark m-2 p-2' 
-                            onClick={() => dsipatch(clearTrans())}
+                            className='col customBtn' 
+                            onClick={() => dispatch(clearTrans())}
                             >Clear transaction</button>
                     </div>
                     <div className='row'>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Price check</button>
-                        <button className='col btn btn-md btn-dark m-2 p-2'>Save transaction</button>
+                        <button className='col customBtn'>Price check</button>
+                        <button className='col customBtn'>Save transaction</button>
                     </div>
                 </div>
             </div>
-            <Modal show={show} onHide={handleClose}>
+            <Modal show={showEdit} onHide={() => setShowEdit(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Delete/modify item</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>{currItem.name}</Modal.Body>
-                <div className='row'>
-                    <label className='m-3 col-md-4'>Quantity:</label>
-                    <input type='number' min="1" max="100" className='form-control customInput' placeholder={currItem.transQty} onChange={(e) => setNewQty(e.target.value)}/>
-                </div>
+                    <div className='row'>
+                        <label className='m-3 col-md-4'>Quantity:</label>
+                        <input type='number' min="1" max="100" className='form-control customInput' placeholder={currItem.transQty} onChange={(e) => setNewQty(e.target.value)}/>
+                    </div>
                 <Modal.Footer>
-                    <button className='btn btn-primary col-md-4' onClick={handleClose}>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => setShowEdit(false)}>
                         Close
                     </button>
-                    <button className='btn btn-success' onClick={() => {
-                        dsipatch(updateItem(currItem.barcode, newQty));
-                        handleClose();
+                    <button className='btn btn-lg btn-success' onClick={() => {
+                        dispatch(updateItem(currItem.barcode, newQty));
+                        setShowEdit(false);
                         }}>
                         Update
                     </button>
-                    <button className='btn btn-danger' onClick={() => {
-                        dsipatch(removeItem(currItem.barcode));
-                        handleClose();
+                    <button className='btn btn-lg btn-danger' onClick={() => {
+                        dispatch(removeItem(currItem.barcode));
+                        setShowEdit(false);
                         }}>
                         Delete Item
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showDiscount} onHide={() => setShowDiscount(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Discount</Modal.Title>
+                </Modal.Header>
+                    <div className='row'>
+                        <label className='m-3 col-md-4'>amount</label>
+                        <input type='number' min="1" max="100" className='form-control customInput'  onChange={(e) => setCurrDiscount(e.target.value)}/>
+                    </div>
+                    <div className='row'>
+                        <label className='col m-3'>
+                            <input className='m-2' type='radio' value='dollar' checked={discountType === 'dollar'} onChange={() => setDiscountType('dollar')}/>
+                            Dollar
+                        </label>
+                        <label className='col m-3'>
+                            <input className='m-2' type='radio' value='percent' checked={discountType === 'percent'} onChange={() => setDiscountType('percent')}/>
+                            Percent
+                        </label>
+                    </div>
+                <Modal.Footer>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
+                        setDiscountType('percent')
+                        setShowDiscount(false);
+                        }}>
+                        Close
+                    </button>
+                    <button className='btn btn-lg btn-success' onClick={() => {
+                        handleDiscount();
+                        setDiscountType('percent');
+                        setShowDiscount(false);
+                        }}>
+                        Submit
+                    </button>
+                    <button className='btn btn-lg btn-danger' onClick={() => {
+                        dispatch(clearDiscount());
+                        setDiscountType('percent');
+                        setShowDiscount(false);
+                        }}>
+                        Clear Discount
                     </button>
                 </Modal.Footer>
             </Modal>
