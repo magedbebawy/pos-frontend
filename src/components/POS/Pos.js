@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Modal } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 import './pos.css';
-import { clearTrans, addItem, removeItem} from '../../redux/actions/transactionActions';
+import { clearTrans, addItem, removeItem, updateItem } from '../../redux/actions/transactionActions';
 import prod from '../../products';
 
 const POS = () => {
@@ -17,27 +17,33 @@ const POS = () => {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
-    console.log('items', items);
+    const [ newQty, setNewQty ] = useState(0);
+
     const [paymentMode, setPaymentMode] = useState('');
     const [barcode, setBarcode] = useState('');
     const [cashReceived, setCashReceived] = useState(0);
     const [change, setChange] = useState(0);
     
     useEffect(() => {
+        if (!inputRef.current) return;
+    
         inputRef.current.focus();
-
+    
         const handleBlur = () => {
-            if(!show) {
+            if (!show && inputRef.current) {
                 inputRef.current.focus();
             }
         };
     
         inputRef.current.addEventListener('blur', handleBlur);
-    
+        
         return () => {
-            inputRef.current.removeEventListener('blur', handleBlur);
+            if (inputRef.current) {
+                inputRef.current.removeEventListener('blur', handleBlur);
+            }
         };
-      }, [show]);
+    }, [show]);
+    
 
     const handlePrintReceipt = () => {
         const receiptData = {
@@ -72,8 +78,9 @@ const POS = () => {
         //     .catch(error => {
         //         console.error("Error fetching product: ", error);
         //     });
+        console.log('prods', prod[0]);
         let product = prod.filter(product => product.barcode == barcode);
-        console.log('product', product[0]);
+        console.log('product', product)
         if (product.length > 0) {
             dsipatch(addItem(product[0]));
             setBarcode('');
@@ -93,7 +100,6 @@ const POS = () => {
             setChange(cashReceived - total);
         }
         // Handle other payment logic here, like printing the receipt.
-        console.log("Payment done using:", paymentMode);
     };
 
     return (
@@ -109,6 +115,7 @@ const POS = () => {
                     onChange={e => setBarcode(e.target.value)}
                     onKeyPress={event => {
                         if (event.key === 'Enter') {
+                            console.log('barcode', barcode);
                             handleScan();
                         }
                     }}
@@ -193,18 +200,27 @@ const POS = () => {
                 <Modal.Header closeButton>
                     <Modal.Title>Delete/modify item</Modal.Title>
                 </Modal.Header>
-                <label className='m-2'>Quantity:</label>
-                <input className='form-control customInput' placeholder={currItem.transQty} />
+                <Modal.Body>{currItem.name}</Modal.Body>
+                <div className='row'>
+                    <label className='m-3 col-md-4'>Quantity:</label>
+                    <input type='number' min="1" max="100" className='form-control customInput' placeholder={currItem.transQty} onChange={(e) => setNewQty(e.target.value)}/>
+                </div>
                 <Modal.Footer>
-                <button className='btn btn-primary' onClick={handleClose}>
-                    Close
-                </button>
-                <button className='btn btn-success' onClick={handleClose}>
-                    Update
-                </button>
-                <button className='btn btn-danger' onClick={handleClose}>
-                    Delete Item
-                </button>
+                    <button className='btn btn-primary col-md-4' onClick={handleClose}>
+                        Close
+                    </button>
+                    <button className='btn btn-success' onClick={() => {
+                        dsipatch(updateItem(currItem.barcode, newQty));
+                        handleClose();
+                        }}>
+                        Update
+                    </button>
+                    <button className='btn btn-danger' onClick={() => {
+                        dsipatch(removeItem(currItem.barcode));
+                        handleClose();
+                        }}>
+                        Delete Item
+                    </button>
                 </Modal.Footer>
             </Modal>
         </div>

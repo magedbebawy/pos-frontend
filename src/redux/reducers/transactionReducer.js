@@ -1,7 +1,8 @@
 import {
     CLEAR_TRANS,
     ADD_ITEM,
-    REMOVE_ITEM
+    REMOVE_ITEM,
+    UPDATE_ITEM
 } from '../actions/transactionActions';
 
 const initialState = {
@@ -23,6 +24,10 @@ const transactionReducer = (state = initialState, action) => {
         case ADD_ITEM:
             console.log('add item');
             return addItem(state, action.payload);
+        case REMOVE_ITEM:
+            return removeItem(state, action.payload);
+        case UPDATE_ITEM:
+            return updateItem(state, action.payload.barcode, action.payload.qty);
         default:
             return state;
     }
@@ -53,9 +58,37 @@ const addItem = (state, item) => {
     }
 
     state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
 
     return state;
 };
 
+const removeItem = (state, barcode) => {
+    for(let i = 0; i < state.items.length; i++) {
+        if(state.items[i].barcode == barcode) {
+            state.items.splice(i,1);
+        };
+    }
+
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
+
+    return state;
+}
+
+const updateItem = (state, barcode, qty) => {
+    if(qty == 0) return removeItem(state, barcode);
+    for(let i = 0; i < state.items.length; i++) {
+        if(state.items[i].barcode = barcode) {
+            state.items[i].transQty = qty;
+            state.items[i].totalPrice = (state.items[i].price * qty);
+        }
+    }
+
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
+
+    return state;
+}
 
 export default transactionReducer;

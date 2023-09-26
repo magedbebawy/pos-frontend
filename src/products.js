@@ -1,5 +1,5 @@
 const products = [
-        { barcode: '0012345678901', name: 'Apple Juice', price: 2.50, quantity: 100, taxable: true },
+        { barcode: '0012345678902', name: 'Apple Juice', price: 2.50, quantity: 100, taxable: true },
         { barcode: '0012345678902', name: 'Banana Bunch', price: 1.20, quantity: 75, taxable: true },
         { barcode: '0012345678903', name: 'Chocolate Bar', price: 1.50, quantity: 200, taxable: false },
         { barcode: '64634285156', name: 'Bread Loaf', price: 2.00, quantity: 50, taxable: true },
