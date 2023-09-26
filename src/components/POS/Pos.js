@@ -204,7 +204,7 @@ const POS = () => {
             <div className='col-lg-4 mt-5'>
                 <div className='row mt-5'>
                     <div className='row'>
-                        <button className='col customBtn' onClick={() => setShowDiscount(true)}>Discount</button>
+                        <button disabled={total === 0} className='col customBtn' onClick={() => setShowDiscount(true)}>Discount</button>
                         <button className='col customBtn'>Tax</button>
                         <button className='col customBtn'>Refund</button>
                     </div>
