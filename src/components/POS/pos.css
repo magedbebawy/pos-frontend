@@ -1,4 +1,39 @@
+.scanInput {
+    outline: none;
+    border: none;
+    border-bottom: 1px solid black;
+    width: 300px;
+    height: 50px;
+    margin-bottom: 20px;
+}
+
+.tableBody {
+    min-height: 200px;
+}
+
 .customInput {
     width: 100px;
     margin: 7px;
+}
+
+.customBtn {
+    width: 150px;
+    height: 75px;
+    padding: 5px;
+    margin: 5px;
+    background-color: rgb(25, 25, 26);
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.printBtn {
+    width: 150px;
+    height: 75px;
+    padding: 5px;
+    margin: 5px;
+    background-color: rgb(12, 140, 29);
+    color: white;
+    border: none;
+    border-radius: 5px;
 }

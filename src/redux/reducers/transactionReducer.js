@@ -2,14 +2,18 @@ import {
     CLEAR_TRANS,
     ADD_ITEM,
     REMOVE_ITEM,
-    UPDATE_ITEM
+    UPDATE_ITEM,
+    ADD_DISCOUNT,
+    CLEAR_DISCOUNT
 } from '../actions/transactionActions';
 
 const initialState = {
     items: [],
     total: 0,
     qty: 0,
-    payment: {}
+    payment: {},
+    discount: 0,
+    taxes: 0,
 }
 
 const transactionReducer = (state = initialState, action) => {
@@ -19,8 +23,10 @@ const transactionReducer = (state = initialState, action) => {
                 items: [],
                 total: 0,
                 qty: 0,
-                payment: {}
-            }
+                payment: {},
+                discount: 0,
+                taxes: 0,
+            }            
         case ADD_ITEM:
             console.log('add item');
             return addItem(state, action.payload);
@@ -28,6 +34,10 @@ const transactionReducer = (state = initialState, action) => {
             return removeItem(state, action.payload);
         case UPDATE_ITEM:
             return updateItem(state, action.payload.barcode, action.payload.qty);
+        case ADD_DISCOUNT:
+            return addDiscount(state, action.payload);
+        case CLEAR_DISCOUNT:
+            return clearDiscount(state);
         default:
             return state;
     }
@@ -57,7 +67,7 @@ const addItem = (state, item) => {
         state.items.push(item);
     }
 
-    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
 
     return state;
@@ -65,29 +75,42 @@ const addItem = (state, item) => {
 
 const removeItem = (state, barcode) => {
     for(let i = 0; i < state.items.length; i++) {
-        if(state.items[i].barcode == barcode) {
+        if(state.items[i].barcode === barcode) {
             state.items.splice(i,1);
         };
     }
 
-    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
 
     return state;
 }
 
 const updateItem = (state, barcode, qty) => {
-    if(qty == 0) return removeItem(state, barcode);
+    if(qty === 0) return removeItem(state, barcode);
     for(let i = 0; i < state.items.length; i++) {
-        if(state.items[i].barcode = barcode) {
+        if(state.items[i].barcode === barcode) {
             state.items[i].transQty = qty;
             state.items[i].totalPrice = (state.items[i].price * qty);
         }
     }
 
-    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
 
+    return state;
+}
+
+const addDiscount = (state, amount) => {
+    state.total -= amount;
+    state.discount += parseFloat(amount);
+    console.log('state', state);
+    return state;
+}
+
+const clearDiscount = (state) => {
+    state.discount = 0;
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     return state;
 }
 
