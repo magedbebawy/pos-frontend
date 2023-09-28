@@ -4,7 +4,9 @@ import {
     REMOVE_ITEM,
     UPDATE_ITEM,
     ADD_DISCOUNT,
-    CLEAR_DISCOUNT
+    CLEAR_DISCOUNT,
+    REMOVE_TAX,
+    ADD_TAX
 } from '../actions/transactionActions';
 
 import taxes from '../../taxes';
@@ -40,6 +42,10 @@ const transactionReducer = (state = initialState, action) => {
             return addDiscount(state, action.payload);
         case CLEAR_DISCOUNT:
             return clearDiscount(state);
+        case REMOVE_TAX:
+            return removeTax(state);
+        case ADD_TAX:
+            return addTax(state);
         default:
             return state;
     }
@@ -136,6 +142,18 @@ const calcTax = (price, taxType) => {
         }
     }
     return 0;
+}
+
+const removeTax = (state) => {
+    state.taxes = 0;
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0);
+    return state;
+}
+
+const addTax = (state) => {
+    state.taxes = state.items.reduce((acc, currValue) => acc + currValue.totalTax, 0);
+    state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
+    return state;
 }
 
 export default transactionReducer;
