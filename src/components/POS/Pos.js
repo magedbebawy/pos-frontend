@@ -5,7 +5,16 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { Modal } from 'react-bootstrap';
 import './pos.css';
-import { clearTrans, addItem, removeItem, updateItem, addDiscount, clearDiscount } from '../../redux/actions/transactionActions';
+import { 
+    clearTrans, 
+    addItem, 
+    removeItem, 
+    updateItem, 
+    addDiscount, 
+    clearDiscount,
+    addTax,
+    removeTax
+} from '../../redux/actions/transactionActions';
 import prod from '../../products';
 
 const POS = () => {
@@ -19,6 +28,7 @@ const POS = () => {
     const [showDiscount, setShowDiscount] = useState(false);
     const [ discountType, setDiscountType ] = useState('percent');
     const [ currDiscount, setCurrDiscount ] = useState(0);
+    const [ taxable, setTaxable ] = useState(true);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -101,6 +111,7 @@ const POS = () => {
         console.log('product', product)
         if (product.length > 0) {
             dispatch(addItem(product[0]));
+            setTaxable(true);
             setBarcode('');
             return;
         }else {
@@ -205,7 +216,17 @@ const POS = () => {
                 <div className='row mt-5'>
                     <div className='row'>
                         <button disabled={total === 0} className='col customBtn' onClick={() => setShowDiscount(true)}>Discount</button>
-                        <button className='col customBtn'>Tax</button>
+                        {
+                            taxable ? 
+                            <button disabled={total === 0} className='col customBtn' onClick={() => {
+                                setTaxable(false);
+                                dispatch(removeTax());
+                            }}>Remove Tax</button> :
+                            <button className='col customBtn' onClick={() => {
+                                setTaxable(true);
+                                dispatch(addTax());
+                            }}>Add Tax</button>
+                        }
                         <button className='col customBtn'>Refund</button>
                     </div>
                     <div className='row'>
@@ -213,7 +234,10 @@ const POS = () => {
                         <button className='col customBtn'>Open drawer</button>
                         <button 
                             className='col customBtn' 
-                            onClick={() => dispatch(clearTrans())}
+                            onClick={() => {
+                                dispatch(clearTrans());
+                                setTaxable(true);
+                            }}
                             >Clear transaction</button>
                     </div>
                     <div className='row'>
@@ -237,12 +261,14 @@ const POS = () => {
                     </button>
                     <button className='btn btn-lg btn-success' onClick={() => {
                         dispatch(updateItem(currItem.barcode, newQty));
+                        setTaxable(true);
                         setShowEdit(false);
                         }}>
                         Update
                     </button>
                     <button className='btn btn-lg btn-danger' onClick={() => {
                         dispatch(removeItem(currItem.barcode));
+                        setTaxable(true);
                         setShowEdit(false);
                         }}>
                         Delete Item
