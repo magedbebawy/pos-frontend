@@ -19,6 +19,7 @@ import prod from '../../products';
 
 const POS = () => {
     const inputRef = useRef(null);
+    const priceCheckRef = useRef(null);
     const dispatch = useDispatch();
     const items = useSelector(state => state.transaction.items);
     const total = useSelector(state => state.transaction.total);
@@ -29,6 +30,9 @@ const POS = () => {
     const [ discountType, setDiscountType ] = useState('percent');
     const [ currDiscount, setCurrDiscount ] = useState(0);
     const [ taxable, setTaxable ] = useState(true);
+    const [ showPriceCheck, setShowPriceCheck ] = useState(false);
+    const [ checkItem, setCheckItem ] = useState('');
+    const [ checkItemBarcode, setCheckItemBarcode ] = useState('');
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -45,9 +49,13 @@ const POS = () => {
         inputRef.current.focus();
     
         const handleBlur = () => {
-            if (inputRef.current && !showEdit && !showDiscount) {
+            if (inputRef.current && !showEdit && !showDiscount && !showPriceCheck) {
                 inputRef.current.focus();
             }
+        };
+
+        if(showPriceCheck) {
+            priceCheckRef.current && priceCheckRef.current.focus();
         };
     
         inputRef.current.addEventListener('blur', handleBlur);
@@ -57,7 +65,7 @@ const POS = () => {
                 inputRef.current.removeEventListener('blur', handleBlur);
             }
         };
-    }, [showEdit, showDiscount]);
+    }, [showEdit, showDiscount, showPriceCheck]);
     
 
     const handlePrintReceipt = () => {
@@ -241,8 +249,11 @@ const POS = () => {
                             >Clear transaction</button>
                     </div>
                     <div className='row'>
-                        <button className='col customBtn'>Price check</button>
+                        <button className='col customBtn' onClick={() => {
+                            setShowPriceCheck(true);
+                            }}>Price check</button>
                         <button className='col customBtn'>Save transaction</button>
+                        <button className='col customBtn'>Payout</button>
                     </div>
                 </div>
             </div>
@@ -313,6 +324,53 @@ const POS = () => {
                         setShowDiscount(false);
                         }}>
                         Clear Discount
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showPriceCheck} onHide={() => setShowPriceCheck(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Price Check</Modal.Title>
+                </Modal.Header>
+                    <div className='row m-2'>
+                        <input ref={priceCheckRef} type='text' value={checkItemBarcode} className='form-control customInput' placeholder='Scan Item' onChange={(e) => {
+                            setCheckItemBarcode(e.target.value);
+                        }} onKeyPress={event => {
+                            if (event.key === 'Enter') {
+                                const itemRes = prod.filter(item => item.barcode === checkItemBarcode);
+                                setCheckItem(itemRes);
+                                setCheckItemBarcode('');
+                            }
+                        }}/>
+                    </div>
+                   
+                    {
+                        checkItem.length > 0 ? 
+                        <div className='row m-2'>
+                            <div className='col'>
+                                <h4>Item: </h4>
+                                <h6>{checkItem[0].name}</h6>
+                            </div>
+                            <div className='col'>
+                                <h4>Price: </h4>
+                                <h6>${checkItem[0].price.toFixed(2)}</h6>
+                            </div>
+                           
+                        </div> : ''
+                    }
+                    
+                <Modal.Footer>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
+                        setShowPriceCheck(false);
+                        setCheckItem('');
+                        }}>
+                        Close
+                    </button>
+                    <button className='btn btn-lg btn-success' onClick={() => {
+                        dispatch(addItem(checkItem[0]));
+                        setShowPriceCheck(false);
+                        setCheckItem('');
+                        }}>
+                        Buy Item
                     </button>
                 </Modal.Footer>
             </Modal>
