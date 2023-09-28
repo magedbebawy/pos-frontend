@@ -7,6 +7,8 @@ import {
     CLEAR_DISCOUNT
 } from '../actions/transactionActions';
 
+import taxes from '../../taxes';
+
 const initialState = {
     items: [],
     total: 0,
@@ -59,16 +61,22 @@ const addItem = (state, item) => {
     if (result !== null) {
         console.log('item1', item);
         state.items[result].transQty++;
+        state.items[result].totalTax += state.items[result].tax;
         state.items[result].totalPrice += state.items[result].price;
     } else {
+        const tax = calcTax(item.price, item.taxType);
         item.transQty = 1;
+        item.tax = tax;
+        item.totalTax = tax;
         item.totalPrice = item.price;
         console.log('item', item);
         state.items.push(item);
     }
 
+    state.taxes = state.items.reduce((acc, currValue) => acc + currValue.totalTax, 0);
     state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
+    
 
     return state;
 };
@@ -80,6 +88,7 @@ const removeItem = (state, barcode) => {
         };
     }
 
+    state.taxes = state.items.reduce((acc, currValue) => acc + currValue.totalTax, 0);
     state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
 
@@ -91,10 +100,12 @@ const updateItem = (state, barcode, qty) => {
     for(let i = 0; i < state.items.length; i++) {
         if(state.items[i].barcode === barcode) {
             state.items[i].transQty = qty;
+            state.items[i].totalTax = (state.items[i].tax * qty);
             state.items[i].totalPrice = (state.items[i].price * qty);
         }
     }
 
+    state.taxes = state.items.reduce((acc, currValue) => acc + currValue.totalTax, 0);
     state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     state.qty = state.items.reduce((acc, currValue) => acc + currValue.transQty, 0);
 
@@ -112,6 +123,19 @@ const clearDiscount = (state) => {
     state.discount = 0;
     state.total = state.items.reduce((acc, currValue) => acc + currValue.totalPrice, 0) + state.taxes - state.discount;
     return state;
+}
+
+const calcTax = (price, taxType) => {
+    for(let i = 0; i < taxes.length; i++) {
+        if(taxes[i].name.toLowerCase() === taxType.toLowerCase()) {
+            if(taxType.toLowerCase() === 'cigar') {
+                return taxes[i].value;
+            } else {
+                return price * taxes[i].value;
+            }
+        }
+    }
+    return 0;
 }
 
 export default transactionReducer;
