@@ -37,3 +37,16 @@
     border: none;
     border-radius: 5px;
 }
+
+.inputReciept {
+    width: 200px;
+}
+
+.btnRefund {
+    width: 150px;
+    color: white;
+    background-color: black;
+    height: 50px;
+    border-radius: 5px;
+    border: none;
+}
