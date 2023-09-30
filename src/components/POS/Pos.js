@@ -16,10 +16,14 @@ import {
     removeTax
 } from '../../redux/actions/transactionActions';
 import prod from '../../products';
+import trans from '../../sales';
+import soldItems from '../../productsSold';
 
 const POS = () => {
     const inputRef = useRef(null);
     const priceCheckRef = useRef(null);
+    const refundRef = useRef(null);
+    const refundItemRef = useRef(null);
     const dispatch = useDispatch();
     const items = useSelector(state => state.transaction.items);
     const total = useSelector(state => state.transaction.total);
@@ -33,6 +37,12 @@ const POS = () => {
     const [ showPriceCheck, setShowPriceCheck ] = useState(false);
     const [ checkItem, setCheckItem ] = useState('');
     const [ checkItemBarcode, setCheckItemBarcode ] = useState('');
+    const [ showRefund, setShowRefund] = useState(false);
+    const [ noReciept, setNoReciept ] = useState(false);
+    const [ transNumber, setTransNumber ] = useState(''); 
+    const [ itemNumber, setItemNumber ] = useState('');
+    const [ itemsToRefund, setItemsToRefund ] = useState([]);
+    const [ soldProds, setSoldProds ] = useState([]);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -49,7 +59,7 @@ const POS = () => {
         inputRef.current.focus();
     
         const handleBlur = () => {
-            if (inputRef.current && !showEdit && !showDiscount && !showPriceCheck) {
+            if (inputRef.current && !showEdit && !showDiscount && !showPriceCheck && !showRefund) {
                 inputRef.current.focus();
             }
         };
@@ -57,6 +67,14 @@ const POS = () => {
         if(showPriceCheck) {
             priceCheckRef.current && priceCheckRef.current.focus();
         };
+
+        if(showRefund && !noReciept) {
+            refundRef.current && refundRef.current.focus();
+        }
+
+        if(showRefund && noReciept) {
+            refundItemRef.current && refundItemRef.current.focus();
+        }
     
         inputRef.current.addEventListener('blur', handleBlur);
         
@@ -65,7 +83,7 @@ const POS = () => {
                 inputRef.current.removeEventListener('blur', handleBlur);
             }
         };
-    }, [showEdit, showDiscount, showPriceCheck]);
+    }, [showEdit, showDiscount, showPriceCheck, showRefund, noReciept]);
     
 
     const handlePrintReceipt = () => {
@@ -139,6 +157,21 @@ const POS = () => {
         // Handle other payment logic here, like printing the receipt.
     };
 
+    // A function to get transaction details based on transaction id
+    const getTrans = (id) => {
+        console.log(trans);
+        const transaction = trans.filter(item => item.id == id);
+        console.log('trans', transaction);
+        return transaction;
+    }
+
+    // A function to get all sold products per transaction by transaction ID
+    const getSoldItems = (id) => {
+        const soldProds = soldItems.filter(item => item.transactio_id == id);
+        console.log('products sold', soldProds);
+        return soldProds;
+    }
+
     return (
         <div className="container mt-4 row">
             <div className='col-lg-8'>
@@ -183,10 +216,10 @@ const POS = () => {
                     </tbody>
                 </table>
                 {
-                    discount > 0 ? <h6>Discount: ${discount.toFixed(2)}</h6> : ''
+                    discount != 0 ? <h6>Discount: ${discount.toFixed(2)}</h6> : ''
                 }
                 {
-                    taxes > 0 ? <h6>Taxes: ${taxes.toFixed(2)}</h6> : ''
+                    taxes != 0 ? <h6>Taxes: ${taxes.toFixed(2)}</h6> : ''
                 }
                 <h3>Total: ${total.toFixed(2)}</h3>
 
@@ -235,7 +268,7 @@ const POS = () => {
                                 dispatch(addTax());
                             }}>Add Tax</button>
                         }
-                        <button className='col customBtn'>Refund</button>
+                        <button className='col customBtn' onClick={() => setShowRefund(true)}>Refund</button>
                     </div>
                     <div className='row'>
                         <button className='col customBtn'>Non-UPC items</button>
@@ -371,6 +404,80 @@ const POS = () => {
                         setCheckItem('');
                         }}>
                         Buy Item
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showRefund} onHide={() => setShowRefund(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Refund</Modal.Title>
+                </Modal.Header>
+                    <div className='row'>
+                        <input disabled={noReciept} ref={refundRef} type='text' 
+                        className='form-control inputReciept m-4' placeholder='Scan Reciept' 
+                        onChange={(e) => {setTransNumber(e.target.value)}}
+                        onKeyDown={event => {
+                            if (event.key === 'Enter') {
+                                console.log('trans number', transNumber);
+                                const transacton = getTrans(transNumber);
+                                setSoldProds(getSoldItems(transNumber));
+                            }
+                        }}/>
+                        <button className='btnRefund m-4' onClick={() => {
+                            setNoReciept(!noReciept)
+                            refundItemRef.current && refundItemRef.current.focus();
+                            }}>{!noReciept ? 'No Rciept?' : 'Have a reciept?'}</button>
+                        
+                        <table className="table tableBody">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit price</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {soldProds.map(item => (
+                                    <tr key={item.product_id} onClick={() => {
+                                        setCurrItem(item);
+                                        setShowEdit(true);
+                                        }}>
+                                        <td>{item.product_name}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>${item.price.toFixed(2)}</td>
+                                        <td>${item.totalPrice.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {
+                            noReciept ? <div>
+                                <input 
+                                ref={refundItemRef} type='text' 
+                                className='form-control inputReciept m-4' 
+                                placeholder='Scan Item' 
+                                onChange={(e) => { setItemNumber(e.target.value)}}
+                                onKeyDown={event => {
+                                    if (event.key === 'Enter') {
+                                        console.log('item number', itemNumber);
+                                    }
+                                }}
+                                />
+                            </div> : ''
+                        }
+                    </div>
+                <Modal.Footer>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
+                        setShowRefund(false);
+                        setNoReciept(false);
+                        }}>
+                        Close
+                    </button>
+                    <button className='btn btn-lg btn-danger' onClick={() => {
+                        setShowRefund(false);
+                        setNoReciept(false);
+                        }}>
+                        Refund
                     </button>
                 </Modal.Footer>
             </Modal>
