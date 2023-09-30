@@ -407,7 +407,7 @@ const POS = () => {
                     </button>
                 </Modal.Footer>
             </Modal>
-            <Modal show={showRefund} onHide={() => setShowRefund(false)}>
+            <Modal size='lg' show={showRefund} onHide={() => setShowRefund(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Refund</Modal.Title>
                 </Modal.Header>
@@ -425,9 +425,26 @@ const POS = () => {
                         <button className='btnRefund m-4' onClick={() => {
                             setNoReciept(!noReciept)
                             refundItemRef.current && refundItemRef.current.focus();
-                            }}>{!noReciept ? 'No Rciept?' : 'Have a reciept?'}</button>
+                            }}>{!noReciept ? 'No Rciept?' : 'Have a reciept?'}
+                        </button>
+
+                        {
+                            noReciept ? <div>
+                                <input 
+                                ref={refundItemRef} type='text' 
+                                className='form-control inputReciept m-4' 
+                                placeholder='Scan Item' 
+                                onChange={(e) => { setItemNumber(e.target.value)}}
+                                onKeyDown={event => {
+                                    if (event.key === 'Enter') {
+                                        console.log('item number', itemNumber);
+                                    }
+                                }}
+                                />
+                            </div> : ''
+                        }
                         
-                        <table className="table tableBody">
+                        <table className="table customTable">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -450,21 +467,6 @@ const POS = () => {
                                 ))}
                             </tbody>
                         </table>
-                        {
-                            noReciept ? <div>
-                                <input 
-                                ref={refundItemRef} type='text' 
-                                className='form-control inputReciept m-4' 
-                                placeholder='Scan Item' 
-                                onChange={(e) => { setItemNumber(e.target.value)}}
-                                onKeyDown={event => {
-                                    if (event.key === 'Enter') {
-                                        console.log('item number', itemNumber);
-                                    }
-                                }}
-                                />
-                            </div> : ''
-                        }
                     </div>
                 <Modal.Footer>
                     <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
