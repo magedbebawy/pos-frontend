@@ -15,20 +15,30 @@ import {
     addTax,
     removeTax
 } from '../../redux/actions/transactionActions';
+import {
+    addItemRefund,
+    removeItemRefund,
+    updateItemRefund,
+    clearRefund
+} from '../../redux/actions/refundActions';
 import prod from '../../products';
 import trans from '../../sales';
 import soldItems from '../../productsSold';
 
 const POS = () => {
+    const [ transType, setTransType ] = useState('transaction');
     const inputRef = useRef(null);
     const priceCheckRef = useRef(null);
     const refundRef = useRef(null);
     const refundItemRef = useRef(null);
     const dispatch = useDispatch();
-    const items = useSelector(state => state.transaction.items);
-    const total = useSelector(state => state.transaction.total);
-    const discount = useSelector(state => state.transaction.discount);
-    const taxes = useSelector(state => state.transaction.taxes);
+    const refundState = useSelector(state => state.refund);
+    const transactionState = useSelector(state => state.transaction);
+    const transState = transType === 'transaction' ? transactionState : refundState;
+    const items = transState.items;
+    const total = transState.total;
+    const discount = transState.discount;
+    const taxes = transState.taxes;
     const [showEdit, setShowEdit] = useState(false);
     const [showDiscount, setShowDiscount] = useState(false);
     const [ discountType, setDiscountType ] = useState('percent');
@@ -38,7 +48,6 @@ const POS = () => {
     const [ checkItem, setCheckItem ] = useState('');
     const [ checkItemBarcode, setCheckItemBarcode ] = useState('');
     const [ showRefund, setShowRefund] = useState(false);
-    const [ transType, setTransType ] = useState('transaction');
     const [ noReciept, setNoReciept ] = useState(false);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
@@ -133,7 +142,8 @@ const POS = () => {
         let product = prod.filter(product => product.barcode == barcode);
         console.log('product', product)
         if (product.length > 0) {
-            dispatch(addItem(product[0]));
+            transType === 'transaction' ? dispatch(addItem(product[0])) : dispatch(addItemRefund(product[0]));
+            console.log(items);
             setTaxable(true);
             setBarcode('');
             return;
@@ -197,7 +207,12 @@ const POS = () => {
                             }
                         }}
                     />
-                    <button className='col-lg-5 m-3'>Cancel Refund</button>
+                    {
+                        transType === 'refund' ? 
+                        <button className='btn btn-dark col-lg-5 m-3'>Scan reciept</button> 
+                        : ''
+                    }
+                    
                 </div>
 
                 <table className="table tableBody">
@@ -276,7 +291,11 @@ const POS = () => {
                                 dispatch(addTax());
                             }}>Add Tax</button>
                         }
-                        <button className='col customBtn' onClick={() => setTransType('refund')}>Refund</button>
+                        {
+                            transType === 'refund' ?
+                            <button className='col customBtn' onClick={() => setTransType('transaction')}>Cancel Refund</button> :
+                            <button className='col customBtn' onClick={() => setTransType('refund')}>Refund</button>
+                        }
                     </div>
                     <div className='row'>
                         <button className='col customBtn'>Non-UPC items</button>
