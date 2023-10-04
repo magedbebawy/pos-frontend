@@ -38,11 +38,8 @@ const POS = () => {
     const [ checkItem, setCheckItem ] = useState('');
     const [ checkItemBarcode, setCheckItemBarcode ] = useState('');
     const [ showRefund, setShowRefund] = useState(false);
+    const [ transType, setTransType ] = useState('transaction');
     const [ noReciept, setNoReciept ] = useState(false);
-    const [ transNumber, setTransNumber ] = useState(''); 
-    const [ itemNumber, setItemNumber ] = useState('');
-    const [ itemsToRefund, setItemsToRefund ] = useState([]);
-    const [ soldProds, setSoldProds ] = useState([]);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -172,25 +169,36 @@ const POS = () => {
         return soldProds;
     }
 
+    const handleRefund = (items) => {
+        console.log('items', items);
+        items.map(item => {
+            dispatch(addItem(item));
+        });
+        
+    }
+
     return (
         <div className="container mt-4 row">
             <div className='col-lg-8'>
                 <h2>POS System</h2>
                 
-                <input 
-                    className='scanInput'
-                    ref={inputRef}
-                    type="text" 
-                    placeholder="Scan item" 
-                    value={barcode}
-                    onChange={e => setBarcode(e.target.value)}
-                    onKeyPress={event => {
-                        if (event.key === 'Enter') {
-                            console.log('barcode', barcode);
-                            handleScan();
-                        }
-                    }}
-                />
+                <div className='row'> 
+                    <input 
+                        className='scanInput col-lg-5 m-3'
+                        ref={inputRef}
+                        type="text" 
+                        placeholder={transType === 'transaction' ? "Scan item"  : "Refund"}
+                        value={barcode}
+                        onChange={e => setBarcode(e.target.value)}
+                        onKeyPress={event => {
+                            if (event.key === 'Enter') {
+                                console.log('barcode', barcode);
+                                handleScan();
+                            }
+                        }}
+                    />
+                    <button className='col-lg-5 m-3'>Cancel Refund</button>
+                </div>
 
                 <table className="table tableBody">
                     <thead>
@@ -268,7 +276,7 @@ const POS = () => {
                                 dispatch(addTax());
                             }}>Add Tax</button>
                         }
-                        <button className='col customBtn' onClick={() => setShowRefund(true)}>Refund</button>
+                        <button className='col customBtn' onClick={() => setTransType('refund')}>Refund</button>
                     </div>
                     <div className='row'>
                         <button className='col customBtn'>Non-UPC items</button>
@@ -404,82 +412,6 @@ const POS = () => {
                         setCheckItem('');
                         }}>
                         Buy Item
-                    </button>
-                </Modal.Footer>
-            </Modal>
-            <Modal size='lg' show={showRefund} onHide={() => setShowRefund(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Refund</Modal.Title>
-                </Modal.Header>
-                    <div className='row'>
-                        <input disabled={noReciept} ref={refundRef} type='text' 
-                        className='form-control inputReciept m-4' placeholder='Scan Reciept' 
-                        onChange={(e) => {setTransNumber(e.target.value)}}
-                        onKeyDown={event => {
-                            if (event.key === 'Enter') {
-                                console.log('trans number', transNumber);
-                                const transacton = getTrans(transNumber);
-                                setSoldProds(getSoldItems(transNumber));
-                            }
-                        }}/>
-                        <button className='btnRefund m-4' onClick={() => {
-                            setNoReciept(!noReciept)
-                            refundItemRef.current && refundItemRef.current.focus();
-                            }}>{!noReciept ? 'No Rciept?' : 'Have a reciept?'}
-                        </button>
-
-                        {
-                            noReciept ? <div>
-                                <input 
-                                ref={refundItemRef} type='text' 
-                                className='form-control inputReciept m-4' 
-                                placeholder='Scan Item' 
-                                onChange={(e) => { setItemNumber(e.target.value)}}
-                                onKeyDown={event => {
-                                    if (event.key === 'Enter') {
-                                        console.log('item number', itemNumber);
-                                    }
-                                }}
-                                />
-                            </div> : ''
-                        }
-                        
-                        <table className="table customTable">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Quantity</th>
-                                    <th>Unit price</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {soldProds.map(item => (
-                                    <tr key={item.product_id} onClick={() => {
-                                        setCurrItem(item);
-                                        setShowEdit(true);
-                                        }}>
-                                        <td>{item.product_name}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>${item.price.toFixed(2)}</td>
-                                        <td>${item.totalPrice.toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                <Modal.Footer>
-                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
-                        setShowRefund(false);
-                        setNoReciept(false);
-                        }}>
-                        Close
-                    </button>
-                    <button className='btn btn-lg btn-danger' onClick={() => {
-                        setShowRefund(false);
-                        setNoReciept(false);
-                        }}>
-                        Refund
                     </button>
                 </Modal.Footer>
             </Modal>
