@@ -4,6 +4,7 @@ import {
     UPDATE_ITEM_REFUND,
     CLEAR_REFUND
 } from '../actions/refundActions';
+import taxes from '../../taxes';
 
 const initialState = {
     items: [],
@@ -26,6 +27,8 @@ const refundReducer = (state = initialState, action) => {
                 discount: 0,
                 taxes: 0,
             };
+        case ADD_ITEM_REFUND:
+            return addItem(state, action.payload);
         default:
             return state;
     }
@@ -78,4 +81,4 @@ const calcTax = (price, taxType) => {
     return 0;
 }
 
-module.exports = refundReducer;
+export default refundReducer;
