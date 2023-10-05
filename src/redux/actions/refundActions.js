@@ -18,9 +18,13 @@ const removeItemRefund = (barcode) => {
     }
 }
 
-const updateItemRefund = () => {
+const updateItemRefund = (barcode, qty) => {
     return {
         type: UPDATE_ITEM_REFUND,
+        payload: {
+            barcode, 
+            qty
+        }
     }
 }
 

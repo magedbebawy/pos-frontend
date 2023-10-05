@@ -303,7 +303,8 @@ const POS = () => {
                         <button 
                             className='col customBtn' 
                             onClick={() => {
-                                dispatch(clearTrans());
+                                transType === 'transaction' ? dispatch(clearTrans()) :
+                                dispatch(clearRefund());
                                 setTaxable(true);
                             }}
                             >Clear transaction</button>
@@ -331,14 +332,16 @@ const POS = () => {
                         Close
                     </button>
                     <button className='btn btn-lg btn-success' onClick={() => {
-                        dispatch(updateItem(currItem.barcode, newQty));
+                        transType === 'transaction' ? dispatch(updateItem(currItem.barcode, newQty)) :
+                        dispatch(updateItemRefund(currItem.barcode, newQty));
                         setTaxable(true);
                         setShowEdit(false);
                         }}>
                         Update
                     </button>
                     <button className='btn btn-lg btn-danger' onClick={() => {
-                        dispatch(removeItem(currItem.barcode));
+                        transType === 'transaction' ? dispatch(removeItem(currItem.barcode)) :
+                        dispatch(removeItemRefund(currItem.barcode));
                         setTaxable(true);
                         setShowEdit(false);
                         }}>
