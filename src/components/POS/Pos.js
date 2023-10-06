@@ -286,14 +286,14 @@ const POS = () => {
                                 setTaxable(false);
                                 dispatch(removeTax());
                             }}>Remove Tax</button> :
-                            <button className='col customBtn' onClick={() => {
+                            <button className='col customBtn selected' onClick={() => {
                                 setTaxable(true);
                                 dispatch(addTax());
                             }}>Add Tax</button>
                         }
                         {
                             transType === 'refund' ?
-                            <button className='col customBtn' onClick={() => setTransType('transaction')}>Cancel Refund</button> :
+                            <button className='col customBtn selected' onClick={() => setTransType('transaction')}>Cancel Refund</button> :
                             <button className='col customBtn' onClick={() => setTransType('refund')}>Refund</button>
                         }
                     </div>
