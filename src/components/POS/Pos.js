@@ -31,6 +31,8 @@ const POS = () => {
     const priceCheckRef = useRef(null);
     const refundRef = useRef(null);
     const refundItemRef = useRef(null);
+    const nonUpcRef = useRef(null);
+    const discountRef = useRef(null);
     const dispatch = useDispatch();
     const refundState = useSelector(state => state.refund);
     const transactionState = useSelector(state => state.transaction);
@@ -49,6 +51,8 @@ const POS = () => {
     const [ checkItemBarcode, setCheckItemBarcode ] = useState('');
     const [ showRefund, setShowRefund] = useState(false);
     const [ noReciept, setNoReciept ] = useState(false);
+    const [ showNonUpc, setShowNonUpc ] = useState(false);
+    const [ nonUpcItems, setNonUpcItems ] = useState(prod);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -65,13 +69,17 @@ const POS = () => {
         inputRef.current.focus();
     
         const handleBlur = () => {
-            if (inputRef.current && !showEdit && !showDiscount && !showPriceCheck && !showRefund) {
+            if (inputRef.current && !showEdit && !showDiscount && !showPriceCheck && !showRefund && !showNonUpc) {
                 inputRef.current.focus();
             }
         };
 
         if(showPriceCheck) {
             priceCheckRef.current && priceCheckRef.current.focus();
+        };
+
+        if(showNonUpc) {
+            nonUpcRef.current && nonUpcRef.current.focus();
         };
 
         if(showRefund && !noReciept) {
@@ -81,6 +89,10 @@ const POS = () => {
         if(showRefund && noReciept) {
             refundItemRef.current && refundItemRef.current.focus();
         }
+
+        if(showDiscount) {
+            discountRef.current && discountRef.current.focus();
+        }
     
         inputRef.current.addEventListener('blur', handleBlur);
         
@@ -89,7 +101,7 @@ const POS = () => {
                 inputRef.current.removeEventListener('blur', handleBlur);
             }
         };
-    }, [showEdit, showDiscount, showPriceCheck, showRefund, noReciept]);
+    }, [showEdit, showDiscount, showPriceCheck, showRefund, noReciept, showNonUpc]);
     
 
     const handlePrintReceipt = () => {
@@ -226,7 +238,7 @@ const POS = () => {
                     </thead>
                     <tbody>
                         {items.map(item => (
-                            <tr key={item.barcode} onClick={() => {
+                            <tr className='customTr' key={item.barcode} onClick={() => {
                                 setCurrItem(item);
                                 setShowEdit(true);
                                 }}>
@@ -279,10 +291,10 @@ const POS = () => {
             <div className='col-lg-4 mt-5'>
                 <div className='row mt-5'>
                     <div className='row'>
-                        <button disabled={total === 0} className='col customBtn' onClick={() => setShowDiscount(true)}>Discount</button>
+                        <button disabled={total <= 0} className='col customBtn' onClick={() => setShowDiscount(true)}>Discount</button>
                         {
                             taxable ? 
-                            <button disabled={total === 0} className='col customBtn' onClick={() => {
+                            <button disabled={total <= 0} className='col customBtn' onClick={() => {
                                 setTaxable(false);
                                 dispatch(removeTax());
                             }}>Remove Tax</button> :
@@ -298,7 +310,7 @@ const POS = () => {
                         }
                     </div>
                     <div className='row'>
-                        <button className='col customBtn'>Non-UPC items</button>
+                        <button className='col customBtn' onClick={() => setShowNonUpc(true)}>Non-UPC items</button>
                         <button className='col customBtn'>Open drawer</button>
                         <button 
                             className='col customBtn' 
@@ -355,7 +367,7 @@ const POS = () => {
                 </Modal.Header>
                     <div className='row'>
                         <label className='m-3 col-md-4'>amount</label>
-                        <input type='number' min="1" max="100" className='form-control customInput'  onChange={(e) => setCurrDiscount(e.target.value)}/>
+                        <input ref={discountRef} type='number' min="1" max="100" className='form-control customInput'  onChange={(e) => setCurrDiscount(e.target.value)}/>
                     </div>
                     <div className='row'>
                         <label className='col m-3'>
@@ -434,6 +446,51 @@ const POS = () => {
                         setCheckItem('');
                         }}>
                         Buy Item
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showNonUpc} onHide={() => {setShowNonUpc(false); setNonUpcItems(prod);}}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Non-UPC items</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{currItem.name}</Modal.Body>
+                    <div className='row'>
+                        <label className='nonUpcLabel'>Search products:</label>
+                        <input ref={nonUpcRef} type='text' className='form-control nonUpcInput' placeholder='Item name' onChange={(e) =>{ 
+                            const searchRes = prod.filter(i => i.name.toLowerCase().includes(e.target.value))
+                            setNonUpcItems(searchRes);
+                        }
+                        }/>
+                    </div>
+                    <table className="table customTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {nonUpcItems.map(item => (
+                                    <tr className='customTr' key={item.product_id} onClick={() => {
+                                            dispatch(addItem(item));
+                                            setShowNonUpc(false);
+                                            setNonUpcItems(prod);
+                                        }}>
+                                        <td>{item.name}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>${item.price.toFixed(2)}</td>
+                                        {/* <td>${item.totalPrice.toFixed(2)}</td> */}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                <Modal.Footer>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
+                        setShowNonUpc(false);
+                        setNonUpcItems(prod);
+                        }}>
+                        Close
                     </button>
                 </Modal.Footer>
             </Modal>
