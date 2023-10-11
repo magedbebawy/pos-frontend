@@ -53,6 +53,7 @@ const POS = () => {
     const [ noReciept, setNoReciept ] = useState(false);
     const [ showNonUpc, setShowNonUpc ] = useState(false);
     const [ nonUpcItems, setNonUpcItems ] = useState(prod);
+    const [ savedTrans, setSavedTrans ] = useState([]);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -199,6 +200,25 @@ const POS = () => {
         
     }
 
+    const saveTrans = (trans) => {
+        const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        transactions.push(trans);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+
+    const getSavedTrans = () => {
+        const storedTrans = localStorage.getItem('transactions');
+  
+        if (!storedTrans) return null;
+        
+        try {
+            setSavedTrans(JSON.parse(storedTrans));
+        } catch (e) {
+            console.error('Error parsing the stored array:', e);
+            return null; 
+        }
+    }
+
     return (
         <div className="container mt-4 row">
             <div className='col-lg-8'>
@@ -305,8 +325,16 @@ const POS = () => {
                         }
                         {
                             transType === 'refund' ?
-                            <button className='col customBtn selected' onClick={() => setTransType('transaction')}>Cancel Refund</button> :
-                            <button className='col customBtn' onClick={() => setTransType('refund')}>Refund</button>
+                            <button className='col customBtn selected' 
+                            onClick={() => {
+                                setTransType('transaction');
+                                dispatch(clearRefund());
+                            }}>Cancel Refund</button> :
+                            <button className='col customBtn' 
+                            onClick={() => {
+                                setTransType('refund');
+                                dispatch(clearTrans());
+                            }}>Refund</button>
                         }
                     </div>
                     <div className='row'>
@@ -325,8 +353,16 @@ const POS = () => {
                         <button className='col customBtn' onClick={() => {
                             setShowPriceCheck(true);
                             }}>Price check</button>
-                        <button className='col customBtn'>Save transaction</button>
                         <button className='col customBtn'>Payout</button>
+                        <button disabled={items.length === 0 || transType === 'refund'} className='col customBtn'
+                        onClick={() => {
+                            saveTrans(transactionState);
+                            dispatch(clearTrans());
+                        }}
+                        >Save transaction</button>
+                    </div>
+                    <div className='row'>
+                        <button className='col customBtn'>Saved transactions</button>
                     </div>
                 </div>
             </div>
