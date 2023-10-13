@@ -6,7 +6,8 @@ import {
     ADD_DISCOUNT,
     CLEAR_DISCOUNT,
     REMOVE_TAX,
-    ADD_TAX
+    ADD_TAX,
+    ADD_TRANS
 } from '../actions/transactionActions';
 
 import taxes from '../../taxes';
@@ -46,6 +47,9 @@ const transactionReducer = (state = initialState, action) => {
             return removeTax(state);
         case ADD_TAX:
             return addTax(state);
+        case ADD_TRANS:
+            state = action.payload;
+            return state;
         default:
             return state;
     }

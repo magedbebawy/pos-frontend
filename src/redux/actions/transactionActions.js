@@ -6,6 +6,7 @@ const ADD_DISCOUNT = "ADD_DISCOUNT";
 const CLEAR_DISCOUNT = "CLEAR_DISCOUNT";
 const REMOVE_TAX = "REMOVE_TAX";
 const ADD_TAX = "ADD_TAX";
+const ADD_TRANS = "ADD_TRANS";
 
 function clearTrans() {
     return {
@@ -62,6 +63,13 @@ function addTax() {
     }
 };
 
+function addTrans(trans) {
+    return {
+        type: ADD_TRANS,
+        payload: trans
+    }
+}
+
 module.exports = {
     CLEAR_TRANS,
     ADD_ITEM,
@@ -71,6 +79,7 @@ module.exports = {
     CLEAR_DISCOUNT,
     REMOVE_TAX,
     ADD_TAX,
+    ADD_TRANS,
     clearTrans,
     addItem,
     removeItem,
@@ -78,5 +87,6 @@ module.exports = {
     addDiscount,
     clearDiscount,
     removeTax,
-    addTax
+    addTax,
+    addTrans
 };
