@@ -13,7 +13,8 @@ import {
     addDiscount, 
     clearDiscount,
     addTax,
-    removeTax
+    removeTax,
+    addTrans
 } from '../../redux/actions/transactionActions';
 import {
     addItemRefund,
@@ -54,6 +55,7 @@ const POS = () => {
     const [ showNonUpc, setShowNonUpc ] = useState(false);
     const [ nonUpcItems, setNonUpcItems ] = useState(prod);
     const [ savedTrans, setSavedTrans ] = useState([]);
+    const [ showSavedTrans, setShowSavedTrans ] = useState(false);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -202,6 +204,7 @@ const POS = () => {
 
     const saveTrans = (trans) => {
         const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        console.log(transactions);
         transactions.push(trans);
         localStorage.setItem('transactions', JSON.stringify(transactions));
     }
@@ -219,11 +222,22 @@ const POS = () => {
         }
     }
 
+    const clearSavedTrans = () => {
+        localStorage.removeItem('transactions');
+    }
+
+    const removeSavedTrans = (index) => {
+        dispatch(addTrans(savedTrans[index]));
+        let trans = savedTrans;
+        trans.splice(index, 1);
+        setSavedTrans(trans);
+        localStorage.setItem('transactions', JSON.stringify(savedTrans));
+    }
+
     return (
         <div className="container mt-4 row">
             <div className='col-lg-8'>
                 <h2>POS System</h2>
-                
                 <div className='row'> 
                     <input 
                         className='scanInput col-lg-5 m-3'
@@ -362,7 +376,7 @@ const POS = () => {
                         >Save transaction</button>
                     </div>
                     <div className='row'>
-                        <button className='col customBtn'>Saved transactions</button>
+                        <button className='col customBtn' onClick={() => {setShowSavedTrans(true); getSavedTrans()}}>Saved transactions</button>
                     </div>
                 </div>
             </div>
@@ -516,7 +530,6 @@ const POS = () => {
                                         <td>{item.name}</td>
                                         <td>{item.quantity}</td>
                                         <td>${item.price.toFixed(2)}</td>
-                                        {/* <td>${item.totalPrice.toFixed(2)}</td> */}
                                     </tr>
                                 ))}
                             </tbody>
@@ -527,6 +540,46 @@ const POS = () => {
                         setNonUpcItems(prod);
                         }}>
                         Close
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showSavedTrans} onHide={() => setShowSavedTrans(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Saved transactions</Modal.Title>
+                </Modal.Header>
+                {   savedTrans.length === 0 ? <p className='customP'>No saved transactions</p> :
+                    <table className="table customTable">
+                    <thead>
+                        <tr>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {savedTrans.map(item => (
+                            <tr className='customTr' key={savedTrans.indexOf(item)} onClick={() => {
+                                    removeSavedTrans(savedTrans.indexOf(item));
+                                    setShowSavedTrans(false);
+                                }}>
+                                <td>{item.qty}</td>
+                                <td>${item.total.toFixed(2)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                }
+                <Modal.Footer>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
+                        setShowSavedTrans(false);
+                        }}>
+                        Close
+                    </button>
+                    <button className='btn btn-lg btn-danger col-md-4' onClick={() => {
+                        clearSavedTrans();
+                        setSavedTrans([]);
+                        setShowSavedTrans(false);
+                        }}>
+                        Clear
                     </button>
                 </Modal.Footer>
             </Modal>
