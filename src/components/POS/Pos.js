@@ -1,5 +1,6 @@
 // src/components/POS.js
 
+import Keyboard from '../Keyboard/Keyboard';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
@@ -56,6 +57,8 @@ const POS = () => {
     const [ nonUpcItems, setNonUpcItems ] = useState(prod);
     const [ savedTrans, setSavedTrans ] = useState([]);
     const [ showSavedTrans, setShowSavedTrans ] = useState(false);
+    const [ showPayout, setShowPayout ] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
     // const handleClose = () => setShow(false);
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
@@ -236,6 +239,7 @@ const POS = () => {
 
     return (
         <div className="container mt-4 row">
+            {isVisible && <Keyboard /> }
             <div className='col-lg-8'>
                 <h2>POS System</h2>
                 <div className='row'> 
@@ -367,7 +371,7 @@ const POS = () => {
                         <button className='col customBtn' onClick={() => {
                             setShowPriceCheck(true);
                             }}>Price check</button>
-                        <button className='col customBtn'>Payout</button>
+                        <button className='col customBtn' onClick={() => setShowPayout(true)}>Payout</button>
                         <button disabled={items.length === 0 || transType === 'refund'} className='col customBtn'
                         onClick={() => {
                             saveTrans(transactionState);
@@ -377,6 +381,7 @@ const POS = () => {
                     </div>
                     <div className='row'>
                         <button className='col customBtn' onClick={() => {setShowSavedTrans(true); getSavedTrans()}}>Saved transactions</button>
+                        <button className='col customBtn' onClick={() => setIsVisible(!isVisible)}>{isVisible ? 'Hide Keboard' : 'Show Keyboard'}</button>
                     </div>
                 </div>
             </div>
@@ -580,6 +585,26 @@ const POS = () => {
                         setShowSavedTrans(false);
                         }}>
                         Clear
+                    </button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showPayout} onHide={() => setShowPayout(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Payout</Modal.Title>
+                </Modal.Header>
+                        <input className='payoutInput' placeholder='Vendor'/>
+                        <input className='payoutInput' placeholder='Invoice#'/>
+                        <input className='payoutInput' placeholder='Amount'/>
+                <Modal.Footer>
+                    <button className='btn btn-lg btn-primary col-md-4' onClick={() => {
+                        setShowPayout(false);
+                        }}>
+                        Close
+                    </button>
+                    <button className='btn btn-lg btn-danger col-md-4' onClick={() => {
+                        setShowPayout(false);
+                        }}>
+                        Confirm
                     </button>
                 </Modal.Footer>
             </Modal>
