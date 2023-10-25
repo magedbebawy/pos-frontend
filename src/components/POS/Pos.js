@@ -63,7 +63,6 @@ const POS = () => {
     // const handleShow = () => setShow(true);
     const [ currItem, setCurrItem ] = useState('');
     const [ newQty, setNewQty ] = useState(0);
-
     const [paymentMode, setPaymentMode] = useState('');
     const [barcode, setBarcode] = useState('');
     const [cashReceived, setCashReceived] = useState(0);
@@ -239,7 +238,6 @@ const POS = () => {
 
     return (
         <div className="container mt-4 row">
-            {isVisible && <Keyboard /> }
             <div className='col-lg-8'>
                 <h2>POS System</h2>
                 <div className='row'> 
@@ -608,6 +606,7 @@ const POS = () => {
                     </button>
                 </Modal.Footer>
             </Modal>
+            {isVisible && <Keyboard /> }
         </div>
     );
 }
