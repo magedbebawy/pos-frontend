@@ -1,0 +1,15 @@
+.floating-keyboard {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: fit-content;
+}
+
+.keyButton {
+    width: 100px;
+    height: 75px;
+    background-color: blue;
+    color: white;
+    font-size: large;
+    border: .5px solid white;
+}

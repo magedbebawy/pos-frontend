@@ -6,7 +6,7 @@
 }
 
 .tableBody {
-    min-height: 200px;
+    height: 300px;
 }
 
 .customInput {
@@ -75,4 +75,10 @@
 .customP {
     width: fit-content;
     margin: 20px auto;
+}
+
+.payoutInput {
+    width: 80%;
+    margin: 10px auto;
+    height: 50px;
 }
