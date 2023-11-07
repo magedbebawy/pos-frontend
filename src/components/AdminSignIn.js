@@ -29,7 +29,7 @@ function SignIn() {
                             <button type="submit" className="btn btn-primary m-4" onClick={handelSubmit}>Sign In</button>
                         </form>
                         <div className="mt-3 m-4">
-                            Don't have an account? <Link to="/cashier/signup">Sign Up</Link>
+                            Don't have an account? <Link to="/admin/signup">Sign Up</Link>
                         </div>
                     </div>
                 </div>

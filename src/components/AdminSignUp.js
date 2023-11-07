@@ -21,7 +21,7 @@ function SignUp() {
                             <button type="submit" className="btn btn-primary m-4">Sign Up</button>
                         </form>
                         <div className="mt-3 m-4">
-                            Already have an account? <Link to="/cashier/signin">Sign In</Link>
+                            Already have an account? <Link to="/admin/signin">Sign In</Link>
                         </div>
                     </div>
                 </div>
