@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,8 +11,33 @@ import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import AdminSignIn from './components/AdminSignIn';
 import AdminSignUp from './components/AdminSignUp';
+import { useDispatch, useSelector } from 'react-redux';
+import { adminSignin, adminSignout } from './redux/actions/userActions';
+
 
 function App() {
+  const URL = 'http://localhost:3000';
+  const dsipatch = useDispatch();
+  const signedIn = useSelector(state => state.user.signedIn);
+
+  useEffect(async () => {
+    try {
+      const data = {
+        token: localStorage.getItem('token')
+    }
+
+    const apiResponse = await fetch(`${URL}/user/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    console.log(await apiResponse.json());
+    } catch (err) {
+      console.log(err);
+    }
+  },[])
   return (
       <Router>
         <div className="App">
