@@ -156,7 +156,7 @@ const POS = () => {
         //         console.error("Error fetching product: ", error);
         //     });
         console.log('prods', prod[0]);
-        let product = prod.filter(product => product.barcode == barcode);
+        let product = prod.filter(product => product.barcode === barcode);
         console.log('product', product)
         if (product.length > 0) {
             transType === 'transaction' ? dispatch(addItem(product[0])) : dispatch(addItemRefund(product[0]));
@@ -184,14 +184,14 @@ const POS = () => {
     // A function to get transaction details based on transaction id
     const getTrans = (id) => {
         console.log(trans);
-        const transaction = trans.filter(item => item.id == id);
+        const transaction = trans.filter(item => item.id === id);
         console.log('trans', transaction);
         return transaction;
     }
 
     // A function to get all sold products per transaction by transaction ID
     const getSoldItems = (id) => {
-        const soldProds = soldItems.filter(item => item.transactio_id == id);
+        const soldProds = soldItems.filter(item => item.transactio_id === id);
         console.log('products sold', soldProds);
         return soldProds;
     }
@@ -287,10 +287,10 @@ const POS = () => {
                     </tbody>
                 </table>
                 {
-                    discount != 0 ? <h6>Discount: ${discount.toFixed(2)}</h6> : ''
+                    discount !== 0 ? <h6>Discount: ${discount.toFixed(2)}</h6> : ''
                 }
                 {
-                    taxes != 0 ? <h6>Taxes: ${taxes.toFixed(2)}</h6> : ''
+                    taxes !== 0 ? <h6>Taxes: ${taxes.toFixed(2)}</h6> : ''
                 }
                 <h3>Total: ${total.toFixed(2)}</h3>
 

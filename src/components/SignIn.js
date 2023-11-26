@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';  // Import Link from react-router-dom
 import { useDispatch, useSelector } from 'react-redux';
 import { adminSignin, adminSignout } from '../redux/actions/userActions';
@@ -7,6 +7,9 @@ function SignIn() {
     const dsipatch = useDispatch();
     const signedIn = useSelector(state => state.user.signedIn);
     console.log(signedIn);
+
+    const [ userID, setUserID ] = useState('');
+    const [ password, setPassword ] = useState('');
 
     const handelSubmit = (e) => {
         e.preventDefault();
@@ -21,10 +24,14 @@ function SignIn() {
                         <h2 className="mb-4">Sign In</h2>
                         <form>
                             <div className="form-group m-4">
-                                <input type="text" className="form-control" placeholder="Username" />
+                                <input type="text" className="form-control" 
+                                onChange={(e) => setUserID(e.target.value)}
+                                value={userID} placeholder="User ID" />
                             </div>
                             <div className="form-group m-4">
-                                <input type="password" className="form-control" placeholder="Password" />
+                                <input type="password" className="form-control" 
+                                onChange={(e) => setPassword(e.target.value)}
+                                value={password} placeholder="Password" />
                             </div>
                             <button type="submit" className="btn btn-primary m-4" onClick={handelSubmit}>Sign In</button>
                         </form>
