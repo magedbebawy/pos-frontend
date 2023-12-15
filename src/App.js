@@ -13,6 +13,9 @@ import AdminSignIn from './components/AdminSignIn';
 import AdminSignUp from './components/AdminSignUp';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminSignin, adminSignout } from './redux/actions/userActions';
+import Account from './components/Account';
+import Stores from './components/Stores';
+import CreateStore from './components/CreateStore';
 
 
 function App() {
@@ -20,37 +23,49 @@ function App() {
   const dsipatch = useDispatch();
   const signedIn = useSelector(state => state.user.signedIn);
 
-  useEffect(async () => {
-    try {
-      const data = {
-        token: localStorage.getItem('token')
+  useEffect(() => {
+    async function verifyToke() {
+      try {
+        const data = {
+          token: localStorage.getItem('token')
+      }
+  
+      const apiResponse = await fetch(`${URL}/user/verify`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+      });
+      if(apiResponse.ok) {
+        dsipatch(adminSignin());
+      } else {
+        dsipatch(adminSignout());
+      }
+      } catch (err) {
+        console.log(err);
+      }
     }
 
-    const apiResponse = await fetch(`${URL}/user/verify`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
-    console.log(await apiResponse.json());
-    } catch (err) {
-      console.log(err);
-    }
+    verifyToke();
+
   },[])
   return (
       <Router>
         <div className="App">
           <Navbar/>
           <Routes>
-            <Route path="/products" element={<ProductList/>} />
-            <Route path="/products/new"  element={<NewProduct/>}/>
-            <Route path="/sales" element={<SalesList/>} />
-            <Route path="/" element={<POS/>} />
+            <Route path="/products" element={signedIn ? <ProductList/> : <AdminSignIn/>} />
+            <Route path="/products/new"  element={signedIn ? <NewProduct/> : <AdminSignIn/>}/>
+            <Route path="/sales" element={signedIn ? <SalesList/> : <AdminSignIn/>} />
+            <Route path="/" element={signedIn ? <POS/> : <AdminSignIn/>} />
             <Route path="/admin/signin" element={<AdminSignIn/>} />
             <Route path="/admin/signup" element={<AdminSignUp/>} />
-            <Route path="/cashier/signin" element={<SignIn/>} />
-            <Route path="/cashier/signup" element={<SignUp/>} />
+            <Route path="/cashier/signin" element={signedIn ? <SignIn/> : <AdminSignIn/>} />
+            <Route path="/cashier/signup" element={signedIn ? <SignUp/> : <AdminSignIn/>} />
+            <Route path="/account" element={signedIn ? <Account/> : <AdminSignIn/>} />
+            <Route path="/stores" element={signedIn ? <Stores/> : <AdminSignIn/>} />
+            <Route path="/stores/newstore" element={signedIn ? <CreateStore/> : <AdminSignIn/>} />
           </Routes>
           <ToastContainer />
         </div>

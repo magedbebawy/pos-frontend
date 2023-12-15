@@ -2,10 +2,16 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { adminSignin, adminSignout } from '../redux/actions/userActions';
+
 
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const signedIn = useSelector(state => state.user.signedIn);
+
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container-fluid">
@@ -30,10 +36,18 @@ const Navbar = () => {
                                 <button className="dropdown-item">Close Day</button>
                                 <button className="dropdown-item">Logout Cashier</button>
                                 <button className="dropdown-item" onClick={() => {
-                                    navigate('/admin/signin');
-                                    console.log("Logged Out");
-                                }}>Sign In</button>
+                                    if (signedIn) {
+                                        dispatch(adminSignout());
+                                        localStorage.removeItem('token');
+                                        navigate('/admin/signin');
+                                    } else {
+                                        navigate('/admin/signin');
+                                    }
+                                }}>{signedIn ? 'Logout Admin' : 'Login Admin'}</button>
                             </div>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/account">Account</Link>
                         </li>
                     </ul>
                 </div>
